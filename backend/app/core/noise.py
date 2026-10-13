@@ -24,7 +24,12 @@ class Noise(ABC):
 
     def apply(self, img: np.ndarray) -> np.ndarray:
         """Apply noise to an image (gray or RGB uint8). Returns uint8."""
-        raise NotImplementedError("TODO (B): implement Noise.apply()")
+        # Work in float64 to avoid uint8 overflow/wrap-around.
+        floating = img.astype(np.float64)
+        # Delegate the actual corruption to the subclass.
+        corrupted = self._corrupt(floating)
+        # Clamp back to valid pixel range and return as uint8.
+        return np.clip(corrupted, 0, 255).astype(np.uint8)
 
     @abstractmethod
     def _corrupt(self, img: np.ndarray) -> np.ndarray:
@@ -41,7 +46,9 @@ class UniformNoise(Noise):
         self.high = high
 
     def _corrupt(self, img: np.ndarray) -> np.ndarray:
-        raise NotImplementedError("TODO (B): implement UniformNoise._corrupt()")
+        # Generate a noise array matching the image shape, drawn from U(low, high).
+        noise = self._rng.uniform(self.low, self.high, size=img.shape)
+        return img + noise
 
 
 class GaussianNoise(Noise):
@@ -53,7 +60,9 @@ class GaussianNoise(Noise):
         self.sigma = sigma
 
     def _corrupt(self, img: np.ndarray) -> np.ndarray:
-        raise NotImplementedError("TODO (B): implement GaussianNoise._corrupt()")
+        # Generate normally distributed noise matching the image shape.
+        noise = self._rng.normal(self.mean, self.sigma, size=img.shape)
+        return img + noise
 
 
 class SaltPepperNoise(Noise):
@@ -72,11 +81,44 @@ class SaltPepperNoise(Noise):
         seed: Optional[int] = None,
     ):
         super().__init__(seed)
+        if not (0 <= density <= 1):
+            raise ValueError("density must be in [0, 1]")
+        if not (0 <= salt_ratio <= 1):
+            raise ValueError("salt_ratio must be in [0, 1]")
         self.density = density
         self.salt_ratio = salt_ratio
 
     def _corrupt(self, img: np.ndarray) -> np.ndarray:
-        raise NotImplementedError("TODO (B): implement SaltPepperNoise._corrupt() from scratch")
+        # Make a copy so we don't modify the original float64 image.
+        out = img.copy()
+
+        # Determine spatial dimensions (H, W) regardless of color or gray.
+        if img.ndim == 2:
+            h, w = img.shape
+        else:
+            h, w = img.shape[:2]
+
+        # One random value per pixel POSITION so the same position is
+        # corrupted across all channels in a color image.
+        mask = self._rng.random((h, w))
+
+        # Threshold for salt: pixels with mask < density * salt_ratio → 255.
+        salt_thresh = self.density * self.salt_ratio
+        # Threshold for pepper: pixels with mask < density but ≥ salt_thresh → 0.
+        pepper_thresh = self.density
+
+        salt_mask = mask < salt_thresh
+        pepper_mask = (mask >= salt_thresh) & (mask < pepper_thresh)
+
+        if img.ndim == 2:
+            out[salt_mask] = 255.0
+            out[pepper_mask] = 0.0
+        else:
+            # Apply the same spatial mask to every channel.
+            out[salt_mask, :] = 255.0
+            out[pepper_mask, :] = 0.0
+
+        return out
 
 
 def make_noise(noise_type: str, **params) -> Noise:
@@ -84,4 +126,11 @@ def make_noise(noise_type: str, **params) -> Noise:
 
     Raise ValueError for an unknown type.
     """
-    raise NotImplementedError("TODO (B): implement make_noise()")
+    factories = {
+        "uniform": UniformNoise,
+        "gaussian": GaussianNoise,
+        "salt_pepper": SaltPepperNoise,
+    }
+    if noise_type not in factories:
+        raise ValueError(f"Unknown noise type: {noise_type!r}")
+    return factories[noise_type](**params)

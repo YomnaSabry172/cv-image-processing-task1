@@ -16,7 +16,10 @@ def box(k: int) -> np.ndarray:
     Each element = 1/k², so the kernel sums to 1 (preserves brightness).
     k must be a positive odd integer (raise ValueError otherwise).
     """
-    raise NotImplementedError("TODO (B): implement box(k) — ones((k, k)) / k²")
+    if k < 1 or k % 2 == 0:
+        raise ValueError("k must be a positive odd integer")
+    # Every weight is equal; dividing by k² makes the sum exactly 1.
+    return np.ones((k, k), dtype=np.float64) / (k * k)
 
 
 def gaussian(k: int, sigma: float) -> np.ndarray:
@@ -51,7 +54,7 @@ def sobel() -> tuple[np.ndarray, np.ndarray]:
     kx = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]
     ky = [[-1, -2, -1], [0, 0, 0], [1, 2, 1]]   (the slide has a typo here)
     """
-        # Weighted differences: the central row/column has more influence.
+    # Weighted differences: the central row/column has more influence.
     kx = np.array(
         [[-1, 0, 1],
          [-2, 0, 2],
@@ -73,7 +76,7 @@ def prewitt() -> tuple[np.ndarray, np.ndarray]:
     kx = [[-1, 0, 1]] repeated 3 rows
     ky = [[-1, -1, -1], [0, 0, 0], [1, 1, 1]]
     """
-        # Equal-weight differences across three rows or columns.
+    # Equal-weight differences across three rows or columns.
     kx = np.array(
         [[-1, 0, 1],
          [-1, 0, 1],
@@ -95,7 +98,7 @@ def roberts() -> tuple[np.ndarray, np.ndarray]:
     kx = [[1, 0], [0, -1]]
     ky = [[0, 1], [-1, 0]]
     """
-        # Compare diagonally opposite pixels in a 2×2 neighbourhood.
+    # Compare diagonally opposite pixels in a 2×2 neighbourhood.
     kx = np.array(
         [[1, 0],
          [0, -1]],
@@ -111,4 +114,10 @@ def roberts() -> tuple[np.ndarray, np.ndarray]:
 
 def laplacian() -> np.ndarray:
     """Laplacian kernel: [[0, 1, 0], [1, -4, 1], [0, 1, 0]]."""
-    raise NotImplementedError("TODO (B): implement laplacian()")
+    # Second-derivative approximation: sums to 0, highlighting edges.
+    return np.array(
+        [[0, 1, 0],
+         [1, -4, 1],
+         [0, 1, 0]],
+        dtype=np.float64,
+    )

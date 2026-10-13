@@ -5,6 +5,7 @@ the absolute difference. Generic — any feature can reuse this. See CLAUDE.md �
 """
 from __future__ import annotations
 
+import time
 from typing import Any, Callable
 
 import numpy as np
@@ -28,4 +29,38 @@ def run_both(
         speedup         — time_manual_ms / time_builtin_ms
         max_abs_diff    — maximum absolute pixel difference (should be ≈ 0)
     """
-    raise NotImplementedError("TODO (B): implement run_both()")
+    # Time the manual implementation.
+    t0 = time.perf_counter()
+    manual_result = manual_fn(*args, **kwargs)
+    time_manual = (time.perf_counter() - t0) * 1000.0
+
+    # Time the builtin implementation.
+    t0 = time.perf_counter()
+    builtin_result = builtin_fn(*args, **kwargs)
+    time_builtin = (time.perf_counter() - t0) * 1000.0
+
+    # Compute the absolute difference in float64 for precision.
+    abs_diff = np.abs(
+        manual_result.astype(np.float64) - builtin_result.astype(np.float64)
+    )
+    max_abs_diff = float(abs_diff.max())
+
+    # Convert difference to a displayable uint8 image.
+    difference = np.clip(abs_diff, 0, 255).astype(np.uint8)
+
+    # Speedup ratio: avoid division by zero.
+    speedup = (
+        time_manual / time_builtin
+        if time_builtin > 0
+        else float("inf")
+    )
+
+    return {
+        "manual": manual_result,
+        "builtin": builtin_result,
+        "difference": difference,
+        "time_manual_ms": round(time_manual, 2),
+        "time_builtin_ms": round(time_builtin, 2),
+        "speedup": round(speedup, 2),
+        "max_abs_diff": max_abs_diff,
+    }

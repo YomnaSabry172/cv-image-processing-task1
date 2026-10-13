@@ -6,9 +6,33 @@ Each has a manual (from scratch) and a built-in (SciPy) implementation.
 from __future__ import annotations
 
 import numpy as np
+from scipy.ndimage import median_filter
 
-from app.core.convolution import apply_kernel
-from app.core.kernels import gaussian
+from app.core.convolution import apply_kernel, pad
+from app.core.kernels import box, gaussian
+from app.utils.channels import apply_per_channel
+
+
+def _median_manual_2d(channel: np.ndarray, k: int) -> np.ndarray:
+    """Manual median filter for a single 2-D channel.
+
+    Uses sliding_window_view to gather k×k neighbourhoods, then takes
+    np.median over them. Keeps input uint8 to limit memory usage.
+    """
+    # Pad the channel so the output has the same spatial size.
+    padded = pad(channel, k, k)
+    # Create a view of all k×k sliding windows — no data is copied.
+    windows = np.lib.stride_tricks.sliding_window_view(padded, (k, k))
+    # Median over the two window axes (the last two dimensions).
+    result = np.median(windows, axis=(-2, -1))
+    return np.clip(result, 0, 255).astype(np.uint8)
+
+
+def _median_builtin_2d(channel: np.ndarray, k: int) -> np.ndarray:
+    """Builtin median filter for a single 2-D channel using SciPy."""
+    # SciPy reflect mode matches NumPy symmetric padding.
+    result = median_filter(channel, size=k, mode="reflect")
+    return np.clip(result, 0, 255).astype(np.uint8)
 
 
 def smooth(
@@ -44,13 +68,20 @@ def smooth(
     if implementation not in ("manual", "builtin"):
         raise ValueError("implementation must be 'manual' or 'builtin'")
 
+    if method == "average":
+        # Reuse the shared box kernel and correlation engine.
+        kernel = box(k)
+        result = apply_kernel(img, kernel, implementation=implementation)
+        return np.clip(result, 0, 255).astype(np.uint8)
+
     if method == "gaussian":
         # Reuse the shared kernel and correlation engine.
         kernel = gaussian(k, sigma)
         result = apply_kernel(img, kernel, implementation=implementation)
         return np.clip(result, 0, 255).astype(np.uint8)
 
-    # The remaining smoothing methods are still Member B's work.
-    raise NotImplementedError(
-        f"TODO (B): implement smooth() method '{method}'"
-    )
+    # method == "median"
+    if implementation == "builtin":
+        return apply_per_channel(_median_builtin_2d, img, k)
+    else:
+        return apply_per_channel(_median_manual_2d, img, k)

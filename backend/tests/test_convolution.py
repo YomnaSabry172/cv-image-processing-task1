@@ -9,9 +9,7 @@ import pytest
 from app.core.convolution import correlate2d_manual, correlate2d_builtin
 from app.core.kernels import box, gaussian, sobel, prewitt, roberts
 
-# TODO (B): delete this line once kernels.py and convolution.py are implemented,
-# then run `pytest` from backend/ — every test must pass.
-pytestmark = pytest.mark.skip(reason="Waiting for B to implement convolution")
+# B's convolution and kernels are now implemented — tests are active.
 
 
 @pytest.fixture
