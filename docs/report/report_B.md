@@ -12,11 +12,15 @@
 - **Convolution engine:** Vectorized manual 2D correlation (looping solely over kernel dimensions) vs SciPy built-in `correlate`, with exact symmetric/reflect border alignment and automatic per-channel handling.
 - **Performance & equivalence analysis:** `run_both` benchmarking utility tracking execution times, speed-up ratios, and absolute difference images ($L_\infty \approx 0$).
 
+---
+
 ## Algorithms (short)
 
 ### 1. Noise Generation
-- **Uniform Noise:** Adds sampled noise $n \sim \mathcal{U}(\text{low}, \text{high})$ to each pixel value: $I_{\text{noisy}} = \text{clip}(I + n, 0, 255)$.
-- **Gaussian Noise:** Adds sampled noise $n \sim \mathcal{N}(\mu, \sigma^2)$ to each pixel value: $I_{\text{noisy}} = \text{clip}(I + n, 0, 255)$.
+- **Uniform Noise:** Adds sampled noise $n \sim \mathcal{U}(\text{low}, \text{high})$ to each pixel value:
+  $$I_{\text{noisy}} = \text{clip}(I + n, 0, 255)$$
+- **Gaussian Noise:** Adds sampled noise $n \sim \mathcal{N}(\mu, \sigma^2)$ to each pixel value:
+  $$I_{\text{noisy}} = \text{clip}(I + n, 0, 255)$$
 - **Salt & Pepper Noise (From Scratch):** Generates a 2D random probability mask $M \in [0, 1)^{H \times W}$. Pixels where $M < \text{density} \times \text{salt\_ratio}$ are set to maximum intensity (255, salt), while pixels where $\text{density} \times \text{salt\_ratio} \le M < \text{density}$ are set to 0 (pepper). For RGB inputs, the exact same spatial coordinates are assigned salt/pepper across all 3 color channels simultaneously.
 
 ### 2. Spatial Low-Pass Smoothing
@@ -30,6 +34,38 @@
 - **Manual Engine:** Avoids pixel-by-pixel Python loops. Instead, iterates solely over the $k_h \times k_w$ kernel coordinates ($a, b$), accumulating shifted slice windows:
   $$\text{out} = \sum_{a=0}^{k_h-1} \sum_{b=0}^{k_w-1} K[a, b] \cdot \text{padded}[a:a+H, b:b+W]$$
 - **Boundary Handling:** Uses symmetric reflection (`np.pad(mode="symmetric")`), matching `scipy.ndimage.correlate(..., mode="reflect")`. Supports even kernels (e.g. Roberts $2 \times 2$) by offsetting asymmetric anchors.
+
+---
+
+## Results
+
+### Noise Generators
+| Original | Uniform Noise | Gaussian Noise | Salt & Pepper Noise |
+|:---:|:---:|:---:|:---:|
+| ![Original](screenshots/B_original.png) | ![Uniform](screenshots/B_noise_uniform.png) | ![Gaussian](screenshots/B_noise_gaussian.png) | ![Salt & Pepper](screenshots/B_noise_salt_pepper.png) |
+
+### Filtering Salt & Pepper Noise (Comparison)
+*Notice how median filtering completely restores the original image without impulse artifacts, while linear filters smudge outliers.*
+
+| S&P Noisy Input | Average Filter ($5\times5$) | Gaussian Filter ($5\times5$) | Median Filter ($5\times5$) |
+|:---:|:---:|:---:|:---:|
+| ![S&P Input](screenshots/B_noise_salt_pepper.png) | ![Avg on SP](screenshots/B_sp_filtered_average.png) | ![Gauss on SP](screenshots/B_sp_filtered_gaussian.png) | ![Median on SP](screenshots/B_sp_filtered_median.png) |
+
+### Filtering Gaussian Noise (Comparison)
+*Gaussian filter delivers the most natural smoothing of Gaussian noise with minimal boundary smearing.*
+
+| Gaussian Noisy Input | Average Filter ($5\times5$) | Gaussian Filter ($5\times5$) | Median Filter ($5\times5$) |
+|:---:|:---:|:---:|:---:|
+| ![Gauss Input](screenshots/B_noise_gaussian.png) | ![Avg on Gauss](screenshots/B_gaussian_filtered_average.png) | ![Gauss on Gauss](screenshots/B_gaussian_filtered_gaussian.png) | ![Median on Gauss](screenshots/B_gaussian_filtered_median.png) |
+
+### Compare Mode: Manual vs Built-in vs Absolute Difference
+*The absolute difference image is completely black ($L_\infty = 0.0$), confirming mathematical equivalence.*
+
+| Manual Vectorized | Built-in (SciPy) | Absolute Difference ($\|M - B\|$) |
+|:---:|:---:|:---:|
+| ![Manual](screenshots/B_compare_manual.png) | ![Builtin](screenshots/B_compare_builtin.png) | ![Difference](screenshots/B_compare_diff.png) |
+
+---
 
 ## Observations on parameter variations
 
@@ -48,6 +84,8 @@
 - **Manual vs built-in: time (ms), speed-up, max difference:**
   - **Max absolute difference:** Consistently evaluated to **0.0** (or $< 10^{-14}$ floating-point precision error) across box, Gaussian, and median filters.
   - **Speed comparison:** The built-in SciPy functions are compiled in C/Fortran and utilize SIMD CPU optimizations, executing in approximately $0.5 - 2$ ms on typical inputs. The manual vectorized implementation executes in approximately $1 - 10$ ms depending on kernel dimensions ($k^2$ slice additions). The manual approach achieves high efficiency without any per-pixel Python looping overhead.
+
+---
 
 ## Problems faced and how I solved them
 
