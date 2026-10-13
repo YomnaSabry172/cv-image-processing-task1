@@ -34,7 +34,10 @@ def edges(req: EdgesRequest):
     t0 = time.perf_counter()
 
     if req.method == "canny":
-        result = canny(img, req.low, req.high, req.blur_sigma)
+        try:
+            result = canny(img, req.low, req.high, req.blur_sigma)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
         elapsed = (time.perf_counter() - t0) * 1000.0
         return ProcessingResponse(
             images={"result": encode_image(result)},

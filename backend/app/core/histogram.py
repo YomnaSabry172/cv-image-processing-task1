@@ -47,7 +47,25 @@ def normalize_minmax(
     Must work on float and signed input. If max == min, return a constant image
     (no division by zero).
     """
-    raise NotImplementedError("TODO (D): implement normalize_minmax()")
+    # Use floating-point arithmetic to support signed filter outputs.
+    values = arr.astype(np.float64)
+
+    # Find the lowest and highest values in this array.
+    minimum = values.min()
+    maximum = values.max()
+
+    # A constant image has no range to stretch; avoid division by zero.
+    if maximum == minimum:
+        return np.full(values.shape, out_min, dtype=np.uint8)
+
+    # Shift the minimum to 0, then scale the maximum to 1.
+    normalized = (values - minimum) / (maximum - minimum)
+
+    # Map the 0–1 values into the requested output range.
+    stretched = normalized * (out_max - out_min) + out_min
+
+    # Convert to valid display pixels.
+    return np.clip(stretched, 0, 255).astype(np.uint8)
 
 
 def channel_stats(img: np.ndarray) -> dict[str, Any]:

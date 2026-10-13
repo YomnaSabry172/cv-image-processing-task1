@@ -9,6 +9,12 @@ from __future__ import annotations
 from typing import Optional
 
 import numpy as np
+import cv2
+
+from app.core.spatial import smooth
+from app.core.color import to_grayscale
+from app.core.convolution import apply_kernel
+from app.core.kernels import sobel, prewitt, roberts
 
 
 class EdgeDetector:
@@ -34,13 +40,35 @@ class EdgeDetector:
             magnitude — sqrt(gx² + gy²)
             direction — arctan2(gy, gx), radians
         """
-        raise NotImplementedError("TODO (C): implement EdgeDetector.detect()")
+                # Edges are calculated from brightness, so use grayscale.
+        gray = to_grayscale(img)
+
+        # Measure brightness changes using the two kernels.
+        gx = apply_kernel(gray, self.kx, implementation=implementation)
+        gy = apply_kernel(gray, self.ky, implementation=implementation)
+
+        # Combine both responses into an edge-strength image.
+        magnitude = np.sqrt(gx ** 2 + gy ** 2)
+
+        # Calculate the gradient angle in radians, preserving signs.
+        direction = np.arctan2(gy, gx)
+
+        return {
+            "gx": gx,
+            "gy": gy,
+            "magnitude": magnitude,
+            "direction": direction,
+        }
 
 
 # TODO (C): register one EdgeDetector per operator, using the kernels from core.kernels:
 #   "sobel": EdgeDetector("sobel", *sobel()), "prewitt": ..., "roberts": ...
 # The /api/edges route returns 501 for a method that is not registered here yet.
-DETECTORS: dict[str, EdgeDetector] = {}
+DETECTORS: dict[str, EdgeDetector] = {
+    "sobel": EdgeDetector("sobel", *sobel()),
+    "prewitt": EdgeDetector("prewitt", *prewitt()),
+    "roberts": EdgeDetector("roberts", *roberts()),
+}
 
 
 def canny(
@@ -54,4 +82,27 @@ def canny(
     If blur_sigma is set, pre-blur with smooth(..., "gaussian") first,
     then call cv2.Canny(gray_uint8, low, high).
     """
-    raise NotImplementedError("TODO (C): implement canny()")
+    if low is None or high is None or not (0 <= low <= high):
+        raise ValueError("Thresholds must satisfy 0 <= low <= high")
+
+    # Canny operates on a single-channel uint8 image.
+    gray = to_grayscale(img)
+
+    if blur_sigma is not None:
+        if not np.isfinite(blur_sigma) or blur_sigma <= 0:
+            raise ValueError("blur_sigma must be finite and greater than 0")
+
+        # Cover roughly three standard deviations on each side.
+        radius = int(np.ceil(3.0 * blur_sigma))
+        kernel_size = 2 * radius + 1
+
+        # Reduce noise before detecting edges.
+        gray = smooth(
+            gray,
+            method="gaussian",
+            k=kernel_size,
+            sigma=blur_sigma,
+            implementation="builtin",
+        )
+
+    return cv2.Canny(gray.astype(np.uint8), low, high)

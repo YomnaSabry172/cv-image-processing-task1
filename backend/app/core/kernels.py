@@ -26,7 +26,23 @@ def gaussian(k: int, sigma: float) -> np.ndarray:
     Normalized so the kernel sums to 1.
     k must be a positive odd integer and sigma > 0 (raise ValueError otherwise).
     """
-    raise NotImplementedError("TODO (B): implement gaussian(k, sigma)")
+    if k < 1 or k % 2 == 0:
+        raise ValueError("k must be a positive odd integer")
+    if not np.isfinite(sigma) or sigma <= 0:
+        raise ValueError("sigma must be finite and greater than 0")
+
+    # Coordinates are centered so the largest weight is in the middle.
+    coordinates = np.arange(k, dtype=np.float64) - k // 2
+    squared_distance = (
+        coordinates[:, None] ** 2
+        + coordinates[None, :] ** 2
+    )
+
+    # Nearby pixels receive greater weight than distant pixels.
+    kernel = np.exp(-squared_distance / (2.0 * sigma ** 2))
+
+    # Weights sum to 1 so smoothing preserves constant brightness.
+    return kernel / kernel.sum()
 
 
 def sobel() -> tuple[np.ndarray, np.ndarray]:
@@ -35,7 +51,20 @@ def sobel() -> tuple[np.ndarray, np.ndarray]:
     kx = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]
     ky = [[-1, -2, -1], [0, 0, 0], [1, 2, 1]]   (the slide has a typo here)
     """
-    raise NotImplementedError("TODO (B): implement sobel()")
+        # Weighted differences: the central row/column has more influence.
+    kx = np.array(
+        [[-1, 0, 1],
+         [-2, 0, 2],
+         [-1, 0, 1]],
+        dtype=np.float64,
+    )
+    ky = np.array(
+        [[-1, -2, -1],
+         [0, 0, 0],
+         [1, 2, 1]],
+        dtype=np.float64,
+    )
+    return kx, ky
 
 
 def prewitt() -> tuple[np.ndarray, np.ndarray]:
@@ -44,7 +73,20 @@ def prewitt() -> tuple[np.ndarray, np.ndarray]:
     kx = [[-1, 0, 1]] repeated 3 rows
     ky = [[-1, -1, -1], [0, 0, 0], [1, 1, 1]]
     """
-    raise NotImplementedError("TODO (B): implement prewitt()")
+        # Equal-weight differences across three rows or columns.
+    kx = np.array(
+        [[-1, 0, 1],
+         [-1, 0, 1],
+         [-1, 0, 1]],
+        dtype=np.float64,
+    )
+    ky = np.array(
+        [[-1, -1, -1],
+         [0, 0, 0],
+         [1, 1, 1]],
+        dtype=np.float64,
+    )
+    return kx, ky
 
 
 def roberts() -> tuple[np.ndarray, np.ndarray]:
@@ -53,7 +95,18 @@ def roberts() -> tuple[np.ndarray, np.ndarray]:
     kx = [[1, 0], [0, -1]]
     ky = [[0, 1], [-1, 0]]
     """
-    raise NotImplementedError("TODO (B): implement roberts()")
+        # Compare diagonally opposite pixels in a 2×2 neighbourhood.
+    kx = np.array(
+        [[1, 0],
+         [0, -1]],
+        dtype=np.float64,
+    )
+    ky = np.array(
+        [[0, 1],
+         [-1, 0]],
+        dtype=np.float64,
+    )
+    return kx, ky
 
 
 def laplacian() -> np.ndarray:

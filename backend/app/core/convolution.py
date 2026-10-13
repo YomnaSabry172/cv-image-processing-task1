@@ -13,6 +13,10 @@ from __future__ import annotations
 
 import numpy as np
 
+from scipy.ndimage import correlate
+
+from app.utils.channels import apply_per_channel
+
 
 def pad(img: np.ndarray, kh: int, kw: int) -> np.ndarray:
     """Pad a 2-D image for correlation with a kernel of size (kh, kw).
@@ -24,7 +28,18 @@ def pad(img: np.ndarray, kh: int, kw: int) -> np.ndarray:
         right  = kw - 1 - kw // 2
     Use np.pad(..., mode="symmetric").
     """
-    raise NotImplementedError("TODO (B): implement pad()")
+        # Split padding around the kernel anchor, including even-sized kernels.
+    top = kh // 2
+    bottom = kh - 1 - top
+    left = kw // 2
+    right = kw - 1 - left
+
+    # Extend the border by mirroring values, including the edge pixel.
+    return np.pad(
+        img,
+        ((top, bottom), (left, right)),
+        mode="symmetric",
+    )
 
 
 def correlate2d_manual(img2d: np.ndarray, kernel: np.ndarray) -> np.ndarray:
@@ -33,7 +48,25 @@ def correlate2d_manual(img2d: np.ndarray, kernel: np.ndarray) -> np.ndarray:
     Do NOT loop over pixels. Loop over kernel positions (a, b) only:
         out += kernel[a, b] * padded[a:a+H, b:b+W]
     """
-    raise NotImplementedError("TODO (B): implement correlate2d_manual()")
+        # Float arithmetic preserves negative gradients and avoids uint8 overflow.
+    image = img2d.astype(np.float64)
+    weights = kernel.astype(np.float64)
+
+    h, w = image.shape
+    kh, kw = weights.shape
+    padded = pad(image, kh, kw)
+
+    output = np.zeros((h, w), dtype=np.float64)
+
+    # Each iteration contributes one kernel weight to every output pixel.
+    for a in range(kh):
+        for b in range(kw):
+            output += (
+                weights[a, b]
+                * padded[a:a + h, b:b + w]
+            )
+
+    return output
 
 
 def correlate2d_builtin(img2d: np.ndarray, kernel: np.ndarray) -> np.ndarray:
@@ -41,7 +74,12 @@ def correlate2d_builtin(img2d: np.ndarray, kernel: np.ndarray) -> np.ndarray:
 
     Use scipy.ndimage.correlate(img2d.astype(np.float64), kernel, mode="reflect").
     """
-    raise NotImplementedError("TODO (B): implement correlate2d_builtin()")
+       # SciPy reflect matches NumPy symmetric padding used by the manual path.
+    return correlate(
+        img2d.astype(np.float64),
+        kernel.astype(np.float64),
+        mode="reflect",
+    )
 
 
 def apply_kernel(
@@ -61,4 +99,13 @@ def apply_kernel(
 
     Use apply_per_channel from app.utils.channels for color images.
     """
-    raise NotImplementedError("TODO (B): implement apply_kernel()")
+        # Select the requested implementation.
+    if implementation == "manual":
+        operation = correlate2d_manual
+    elif implementation == "builtin":
+        operation = correlate2d_builtin
+    else:
+        raise ValueError("implementation must be 'manual' or 'builtin'")
+
+    # Run once for grayscale, or separately for each colour channel.
+    return apply_per_channel(operation, img, kernel)
