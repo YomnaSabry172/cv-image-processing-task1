@@ -136,12 +136,13 @@ RGB uniform/Gaussian samples follow the full array shape. Salt-and-pepper noise 
 Noise examples
 Input: CV_Test_Kit/images/01_constant_128.png. Use seed 42 for each independent example.
 Uniform noise — low −30, high 30
-[Uniform noise, bounds −30 to 30, seed 42](docs/report/screenshots/03-noise-uniform.png) 
+![Uniform noise, bounds −30 to 30, seed 42](docs/report/screenshots/03-noise-uniform.png) 
 
 Gaussian noise — mean 0, sigma 25
-[Gaussian noise, mean 0, sigma 25, seed 42](docs/report/screenshots/04-noise-gaussian.png)
+![Gaussian noise, mean 0, sigma 25, seed 42](docs/report/screenshots/04-noise-gaussian.png)
 
-Salt-and-pepper noise — density 10%, salt ratio 50%[Salt-and-pepper noise, density 0.10, salt ratio 0.50](docs/report/screenshots/05-noise-salt-pepper.png) 
+Salt-and-pepper noise — density 10%, salt ratio 50%
+![Salt-and-pepper noise, density 0.10, salt ratio 0.50](docs/report/screenshots/05-noise-salt-pepper.png) 
 
 2. Spatial filters and implementation comparison
 Filter	Operation	Typical demonstration
@@ -155,13 +156,13 @@ The shared engine performs correlation, despite the historical convolution.py fi
 Compare mode displays manual and built-in results, an absolute-difference image, both execution times, maximum pixel difference and manual_time / builtin_time. A black difference image and a small numeric difference support agreement on that input; they do not prove correctness for all inputs. Timings depend on hardware, image size, method and warm-up.
 Spatial-filter examples
 Average filter — vertical step, 11x11 kernel, Compare mode
-[Average smoothing with a 7×7 kernel](docs/report/screenshots/06-filter-average.png) 
+![Average smoothing with a 7×7 kernel](docs/report/screenshots/06-filter-average.png) 
 
 Gaussian filter — same original vertical step, 13×13 kernel, sigma 2, Compare mode
-[Gaussian smoothing, 11x11 kernel and sigma 2](docs/report/screenshots/07-filter-gaussian.png)
+![Gaussian smoothing, 11x11 kernel and sigma 2](docs/report/screenshots/07-filter-gaussian.png)
 
 Median filter — salt-and-pepper fixture, 3x3
-[Median 3×3 manual and built-in comparison](docs/report/screenshots/08-filter-median-compare.png) 
+![Median 3×3 manual and built-in comparison](docs/report/screenshots/08-filter-median-compare.png) 
 
 The comparison capture should include both outputs, their absolute difference and the actual reported timing/difference values.
 3. Edge detection
@@ -181,19 +182,19 @@ Raw gradients remain signed floats. Component previews take absolute values; mag
 Edge-detection examples
 Use the original step fixtures for each operator rather than chaining edge outputs.
 Sobel — vertical step; Gx detects the boundary
-[Sobel response to a vertical step](docs/report/screenshots/09-edge-sobel-vertical.png) 
+![Sobel response to a vertical step](docs/report/screenshots/09-edge-sobel-vertical.png) 
 
 Sobel — horizontal step; Gy detects the boundary
-[Sobel response to a horizontal step](docs/report/screenshots/10-edge-sobel-horizontal.png) 
+![Sobel response to a horizontal step](docs/report/screenshots/10-edge-sobel-horizontal.png) 
 
 Prewitt — original vertical step
-[Prewitt response to the same vertical step](docs/report/screenshots/11-edge-prewitt.png) 
+![Prewitt response to the same vertical step](docs/report/screenshots/11-edge-prewitt.png) 
 
 Roberts — original vertical step, diagonal responses
-[Roberts response to the same vertical step](docs/report/screenshots/12-edge-roberts.png) 
+![Roberts response to the same vertical step](docs/report/screenshots/12-edge-roberts.png) 
 
 Canny — clean RGB patches, thresholds 20/60, Gaussian pre-blur sigma 1
-[Canny on RGB patches with thresholds 20 and 60](docs/report/screenshots/13-edge-canny.png) 
+![Canny on RGB patches with thresholds 20 and 60](docs/report/screenshots/13-edge-canny.png) 
 
 4 and 8. Histograms, PDF and CDF
 For each grayscale or RGB channel:
@@ -203,10 +204,10 @@ The API includes histogram, PDF, CDF, minimum, maximum, mean and population stan
 The ramp fixture has exactly 256 pixels at every gray level, mean 127.5 and a steadily rising CDF. RGB patches expose channel order and concentrated histogram peaks.
 Histogram and CDF examples
 Grayscale ramp — histogram and cumulative probability
-[Uniform grayscale histogram and cumulative distribution](docs/report/screenshots/14-histogram-gray.png)
+![Uniform grayscale histogram and cumulative distribution](docs/report/screenshots/14-histogram-gray.png)
 
 RGB patches — separate red, green and blue distributions
-[Red, green and blue histograms with CDFs](docs/report/screenshots/15-histogram-rgb.png) 
+![Red, green and blue histograms with CDFs](docs/report/screenshots/15-histogram-rgb.png) 
 
 5. Histogram equalization
 The implementation builds a per-channel lookup table:
@@ -216,7 +217,7 @@ For [0, 0, 1, 2], the result is [128, 128, 191, 255]. A constant grayscale image
 Equalization example
 Input: 07_low_contrast.png. Include the original, equalized output and before/after distributions.
 Direct-CDF equalization of the low-contrast input
-[Direct-CDF equalization of the low-contrast fixture](docs/report/screenshots/16-equalization.png) 
+![Direct-CDF equalization of the low-contrast fixture](docs/report/screenshots/16-equalization.png) 
 
 6. Min-max normalization
 \(I_{out}=\operatorname{round}\left(\frac{I-I_{min}}{I_{max}-I_{min}}\times255\right).\)
@@ -225,7 +226,7 @@ For [100, 105, 110], the output is [0, 128, 255]. A full-range 0–255 image rem
 Normalization example
 Reupload the same original 07_low_contrast.png used above. Its 80–120 range is stretched to 0–255.
 Min-max normalization — original and normalized distributions
-[Min-max normalization of the same low-contrast fixture](docs/report/screenshots/17-normalization.png) 
+![Min-max normalization of the same low-contrast fixture](docs/report/screenshots/17-normalization.png) 
 
 7. Grayscale conversion
 \(Y=0.299R+0.587G+0.114B.\)
@@ -234,7 +235,7 @@ This simplifies brightness-edge processing, with the tradeoff that boundaries be
 Grayscale example
 Input: 06_rgb_patches.png. The clean colour patches become brightness levels 76, 149, 29 and 255.
 Weighted RGB-to-grayscale conversion
-[RGB patches and weighted grayscale conversion](docs/report/screenshots/02-grayscale.png) 
+![RGB patches and weighted grayscale conversion](docs/report/screenshots/02-grayscale.png) 
 
 9. Frequency-domain filtering
 For each channel, the implementation computes:
@@ -253,17 +254,17 @@ High-pass raw output is signed. The Frequency page displays clip(raw + 128, 0, 2
 Frequency-filter examples
 Use 15_hybrid_A_disk.png for the Gaussian low/high-pass examples. Capture the spectrum, mask, filtered spectrum and result.
 Gaussian low-pass — disk input, cutoff 10
-[Gaussian low-pass, cutoff 10, with all spectrum panels](docs/report/screenshots/18-frequency-lowpass.png)
+![Gaussian low-pass, cutoff 10, with all spectrum panels](docs/report/screenshots/18-frequency-lowpass.png)
 
 Gaussian high-pass — same disk input, cutoff 10
-[Gaussian high-pass, cutoff 10, with offset display](docs/report/screenshots/19-frequency-highpass.png)
+![Gaussian high-pass, cutoff 10, with offset display](docs/report/screenshots/19-frequency-highpass.png)
 
 For the shape comparison below, reupload 03_vertical_step.png and keep cutoff 10. Compare the edge transition and any visible ripples.
 Ideal low-pass — vertical step, cutoff 10
-[Ideal low-pass on a sharp step, cutoff 10](docs/report/screenshots/20-frequency-ideal.png) 
+![Ideal low-pass on a sharp step, cutoff 10](docs/report/screenshots/20-frequency-ideal.png) 
 
 Butterworth low-pass — same vertical step, cutoff 10, order 2
-[Butterworth low-pass on the same step, cutoff 10, order 2](docs/report/screenshots/21-frequency-butterworth.png) 
+![Butterworth low-pass on the same step, cutoff 10, order 2](docs/report/screenshots/21-frequency-butterworth.png) 
 
 10. Hybrid images
 \(I_{hybrid}=\operatorname{clip}\left(LP(A)+HP(B),\ 0,\ 255\right).\)
@@ -274,11 +275,11 @@ The Hybrid API uses default Butterworth order 2 because it does not expose a sep
 Hybrid example
 A: 15_hybrid_A_disk.png. B: 16_hybrid_B_stripes.png. Use Gaussian filters with low cutoff 15 and high cutoff 25.
 Hybrid composition — inputs, low-pass A, high-pass B and combined output
-[Geometric hybrid with disk A, stripes B and cutoffs 15/25](docs/report/screenshots/22-hybrid-components.png)
+![Geometric hybrid with disk A, stripes B and cutoffs 15/25](docs/report/screenshots/22-hybrid-components.png)
 
 The broad disk and stripe details illustrate composition. The high-pass component shown here is normalized only for viewing.
 The same hybrid at decreasing viewing sizes
-[The same hybrid at decreasing display sizes](docs/report/screenshots/23-hybrid-view-small.png)
+![The same hybrid at decreasing display sizes](docs/report/screenshots/23-hybrid-view-small.png)
 
 A second optional pair of aligned portraits can demonstrate the perceptual effect. Record permitted image sources and the actual settings used.
 API reference
