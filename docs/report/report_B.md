@@ -1,6 +1,6 @@
-# Report — Member B: Noise & smoothing filters
+# Report: Noise & smoothing filters
 
-**Name:** Member B
+**Name:** ziad osama
 
 ## What I implemented
 - **Additive noise:** Uniform, Gaussian, and Salt & Pepper noise (Feature 1).

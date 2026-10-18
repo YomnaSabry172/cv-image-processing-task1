@@ -68,7 +68,7 @@ The convolution tests are skipped until Member B implements `core/convolution.py
 | Role | Name | Features |
 |------|------|----------|
 | Lead | Yomna Sabry | UI, shared utilities, grayscale (7), integration |
-| B | `MEMBER_B` | Noise (1), low-pass filters (2), convolution engine |
+| B | `ziad osama` | Noise (1), low-pass filters (2), convolution engine |
 | C | `MEMBER_C` | Edge detection (3), frequency filters (9), hybrid images (10) |
 | D | `MEMBER_D` | Histograms & CDF (4, 8), equalization (5), normalization (6) |
 
