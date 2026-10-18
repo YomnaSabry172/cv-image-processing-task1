@@ -2,6 +2,7 @@
 """Noise generation endpoint: uniform, Gaussian, salt & pepper."""
 import time
 from typing import Optional
+import math
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -35,6 +36,32 @@ def noise(req: NoiseRequest):
         img = decode_image(req.image)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+    if req.type == "uniform":
+        if (
+                req.low is None
+                or req.high is None
+                or not math.isfinite(req.low)
+                or not math.isfinite(req.high)
+                or req.low > req.high
+            ):
+            raise HTTPException(
+                    status_code=400,
+                    detail="Uniform noise requires finite low <= high",
+                )
+
+    elif req.type == "gaussian":
+        if (
+                req.mean is None
+                or req.sigma is None
+                or not math.isfinite(req.mean)
+                or not math.isfinite(req.sigma)
+                or req.sigma < 0
+            ):
+         raise HTTPException(
+                    status_code=400,
+                    detail="Gaussian noise requires a finite mean and finite sigma >= 0",
+                )
 
     # Build params for the specific noise type
     params: dict = {}

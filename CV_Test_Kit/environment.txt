@@ -1,0 +1,10 @@
+Python 3.12.14
+Platform: Linux-6.18.55-x86_64-with-glibc2.39
+numpy==2.3.5
+scipy==1.17.0
+opencv-python-headless==5.0.0.93
+pytest==9.1.1
+fastapi==0.145.0
+starlette==1.8.0
+httpx==0.28.1
+pydantic==2.14.0

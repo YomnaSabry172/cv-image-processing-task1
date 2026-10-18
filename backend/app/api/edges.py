@@ -49,6 +49,12 @@ def edges(req: EdgesRequest):
     if req.method not in DETECTORS:
         raise NotImplementedError(f"TODO (C): register '{req.method}' in core.edges.DETECTORS")
 
+    # Gradient operators support only manual or built-in correlation.
+    if req.implementation not in ("manual", "builtin"):
+        raise HTTPException(
+            status_code=400,
+            detail="implementation must be 'manual' or 'builtin'",
+        )
     detector = DETECTORS[req.method]
     raw = detector.detect(img, implementation=req.implementation)
     elapsed = (time.perf_counter() - t0) * 1000.0

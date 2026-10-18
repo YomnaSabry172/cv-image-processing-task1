@@ -1,0 +1,83 @@
+........................................................................ [ 31%]
+..........................................................FFFF...FF..... [ 62%]
+FF.........FF........................................................... [ 93%]
+..............                                                           [100%]
+=================================== FAILURES ===================================
+______________ test_invalid_parameters_return_400[filter-params2] ______________
+../../../deliverables/CV_Test_Kit/qa_tests/test_api.py:101: in test_invalid_parameters_return_400
+    assert response.status_code==400,f'{endpoint} {params}: got {response.status_code}, {response.text}'
+E   AssertionError: filter {'method': 'gaussian', 'sigma': 0}: got 500, Internal Server Error
+E   assert 500 == 400
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+______________ test_invalid_parameters_return_400[filter-params3] ______________
+../../../deliverables/CV_Test_Kit/qa_tests/test_api.py:101: in test_invalid_parameters_return_400
+    assert response.status_code==400,f'{endpoint} {params}: got {response.status_code}, {response.text}'
+E   AssertionError: filter {'method': 'gaussian', 'sigma': None}: got 500, Internal Server Error
+E   assert 500 == 400
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+______________ test_invalid_parameters_return_400[filter-params4] ______________
+../../../deliverables/CV_Test_Kit/qa_tests/test_api.py:101: in test_invalid_parameters_return_400
+    assert response.status_code==400,f'{endpoint} {params}: got {response.status_code}, {response.text}'
+E   AssertionError: filter {'method': 'average', 'implementation': 'invalid'}: got 500, Internal Server Error
+E   assert 500 == 400
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+______________ test_invalid_parameters_return_400[edges-params5] _______________
+../../../deliverables/CV_Test_Kit/qa_tests/test_api.py:101: in test_invalid_parameters_return_400
+    assert response.status_code==400,f'{endpoint} {params}: got {response.status_code}, {response.text}'
+E   AssertionError: edges {'method': 'sobel', 'implementation': 'invalid'}: got 500, Internal Server Error
+E   assert 500 == 400
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+______________ test_invalid_parameters_return_400[noise-params9] _______________
+../../../deliverables/CV_Test_Kit/qa_tests/test_api.py:101: in test_invalid_parameters_return_400
+    assert response.status_code==400,f'{endpoint} {params}: got {response.status_code}, {response.text}'
+E   AssertionError: noise {'type': 'uniform', 'low': 20, 'high': -20}: got 500, Internal Server Error
+E   assert 500 == 400
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+______________ test_invalid_parameters_return_400[noise-params10] ______________
+../../../deliverables/CV_Test_Kit/qa_tests/test_api.py:101: in test_invalid_parameters_return_400
+    assert response.status_code==400,f'{endpoint} {params}: got {response.status_code}, {response.text}'
+E   AssertionError: noise {'type': 'gaussian', 'sigma': -1}: got 500, Internal Server Error
+E   assert 500 == 400
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+_______________ test_empty_image_rejected_without_server_error[] _______________
+../../../deliverables/CV_Test_Kit/qa_tests/test_api.py:107: in test_empty_image_rejected_without_server_error
+    assert response.status_code==400,response.text
+E   AssertionError: Internal Server Error
+E   assert 500 == 400
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+____ test_empty_image_rejected_without_server_error[data:image/png;base64,] ____
+../../../deliverables/CV_Test_Kit/qa_tests/test_api.py:107: in test_empty_image_rejected_without_server_error
+    assert response.status_code==400,response.text
+E   AssertionError: Internal Server Error
+E   assert 500 == 400
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+_______________ test_very_thin_large_images_remain_valid[shape0] _______________
+../../../deliverables/CV_Test_Kit/qa_tests/test_api.py:118: in test_very_thin_large_images_remain_valid
+    assert response.status_code==200,response.text
+E   AssertionError: Internal Server Error
+E   assert 500 == 200
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+_______________ test_very_thin_large_images_remain_valid[shape1] _______________
+../../../deliverables/CV_Test_Kit/qa_tests/test_api.py:118: in test_very_thin_large_images_remain_valid
+    assert response.status_code==200,response.text
+E   AssertionError: Internal Server Error
+E   assert 500 == 200
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+=============================== warnings summary ===============================
+deliverables/CV_Test_Kit/qa_tests/test_api.py::test_health
+  /root/.local/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../deliverables/CV_Test_Kit/qa_tests/test_api.py::test_invalid_parameters_return_400[filter-params2]
+FAILED ../../../deliverables/CV_Test_Kit/qa_tests/test_api.py::test_invalid_parameters_return_400[filter-params3]
+FAILED ../../../deliverables/CV_Test_Kit/qa_tests/test_api.py::test_invalid_parameters_return_400[filter-params4]
+FAILED ../../../deliverables/CV_Test_Kit/qa_tests/test_api.py::test_invalid_parameters_return_400[edges-params5]
+FAILED ../../../deliverables/CV_Test_Kit/qa_tests/test_api.py::test_invalid_parameters_return_400[noise-params9]
+FAILED ../../../deliverables/CV_Test_Kit/qa_tests/test_api.py::test_invalid_parameters_return_400[noise-params10]
+FAILED ../../../deliverables/CV_Test_Kit/qa_tests/test_api.py::test_empty_image_rejected_without_server_error[]
+FAILED ../../../deliverables/CV_Test_Kit/qa_tests/test_api.py::test_empty_image_rejected_without_server_error[data:image/png;base64,]
+FAILED ../../../deliverables/CV_Test_Kit/qa_tests/test_api.py::test_very_thin_large_images_remain_valid[shape0]
+FAILED ../../../deliverables/CV_Test_Kit/qa_tests/test_api.py::test_very_thin_large_images_remain_valid[shape1]
+10 failed, 220 passed, 1 warning in 1.23s

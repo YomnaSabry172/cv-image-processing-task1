@@ -32,6 +32,9 @@ def decode_image(data_url: str) -> np.ndarray:
         data_url = data_url[header_match.end():]
 
     raw = base64.b64decode(data_url)
+    # Reject empty data before passing it to OpenCV.
+    if not raw:
+        raise ValueError("Image data is empty. Please upload a valid image.")
     buf = np.frombuffer(raw, dtype=np.uint8)
     img = cv2.imdecode(buf, cv2.IMREAD_COLOR)  # always BGR, 3-channel
     if img is None:
@@ -45,8 +48,8 @@ def decode_image(data_url: str) -> np.ndarray:
     longest = max(h, w)
     if longest > MAX_SIDE:
         scale = MAX_SIDE / longest
-        new_w = int(w * scale)
-        new_h = int(h * scale)
+        new_w = max(1, int(w * scale))
+        new_h = max(1, int(h * scale))
         img = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
 
     # Detect grayscale: if R == G == B for every pixel, return 2-D

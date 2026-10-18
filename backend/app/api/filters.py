@@ -36,6 +36,20 @@ def filter_image(req: FilterRequest):
     if req.method not in ("average", "gaussian", "median"):
         raise HTTPException(status_code=400, detail=f"Unknown filter method: {req.method}")
 
+        # Reject unsupported implementations before calling the core functions.
+    if req.implementation not in ("manual", "builtin", "compare"):
+        raise HTTPException(
+            status_code=400,
+            detail="implementation must be 'manual', 'builtin', or 'compare'",
+        )
+
+    # Gaussian smoothing requires a finite, positive sigma.
+    if req.method == "gaussian":
+        if req.sigma is None or not (0 < req.sigma < float("inf")):
+            raise HTTPException(
+                status_code=400,
+                detail="Gaussian sigma must be finite and greater than 0",
+            )
     t0 = time.perf_counter()
 
     if req.implementation == "compare":
