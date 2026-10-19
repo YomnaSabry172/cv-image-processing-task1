@@ -45,7 +45,7 @@ export default function Sidebar({ onNavigate, onClose }) {
             <AppIcon className="h-4 w-4" aria-hidden="true" />
           </span>
           <div>
-            <div className="text-sm font-semibold leading-tight">CV Image Lab</div>
+            <div className="text-sm font-semibold leading-tight">CV Image processing</div>
             <div className="text-[11px] text-zinc-500">Task 1 · Image processing</div>
           </div>
         </div>

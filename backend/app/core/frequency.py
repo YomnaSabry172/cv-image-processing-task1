@@ -5,10 +5,49 @@ np.fft is allowed for fft2 / ifft2 / fftshift / ifftshift only. Masks are built 
 """
 from __future__ import annotations
 
+import hashlib
+import threading
+from collections import OrderedDict
 from typing import Any
 
 import numpy as np
 from app.utils.channels import to_display
+
+# The forward FFT depends only on the image, not on kind/shape/cutoff/order.
+# Moving a slider re-sends the same image, so we remember its centered spectrum
+# and only redo the cheap mask multiply + the inverse FFT.
+# 6 entries = two RGB images (e.g. hybrid A and B); 1024×1024 complex128 ≈ 16 MB each.
+_SPECTRUM_CACHE_SIZE = 6
+_spectrum_cache: OrderedDict[str, np.ndarray] = OrderedDict()
+_spectrum_lock = threading.Lock()  # FastAPI runs requests in parallel threads
+
+
+def centered_spectrum(img2d: np.ndarray) -> np.ndarray:
+    """Return fftshift(fft2(img2d)), reusing it if this exact channel was seen recently.
+
+    The key is a hash of the pixel bytes, shape and dtype, so any change to the
+    image gives a new key and a fresh FFT. The returned array is read-only
+    because the same object is shared between requests.
+    """
+    key = hashlib.blake2b(
+        img2d.tobytes() + f"{img2d.shape}{img2d.dtype}".encode(), digest_size=16
+    ).hexdigest()
+
+    with _spectrum_lock:
+        cached = _spectrum_cache.get(key)
+        if cached is not None:
+            _spectrum_cache.move_to_end(key)  # mark as recently used
+            return cached
+
+    spectrum = np.fft.fftshift(np.fft.fft2(img2d.astype(np.float64)))
+    spectrum.flags.writeable = False
+
+    with _spectrum_lock:
+        _spectrum_cache[key] = spectrum
+        _spectrum_cache.move_to_end(key)
+        while len(_spectrum_cache) > _SPECTRUM_CACHE_SIZE:
+            _spectrum_cache.popitem(last=False)  # drop the oldest
+    return spectrum
 
 
 class FrequencyFilter:
@@ -99,14 +138,12 @@ class FrequencyFilter:
         if img2d.ndim != 2:
             raise ValueError("apply_raw expects a 2-D image channel")
 
-        # Floating-point arithmetic preserves signed and fractional values.
-        image = img2d.astype(np.float64)
-
         # Convert the image into frequencies, then center zero frequency.
-        spectrum = np.fft.fftshift(np.fft.fft2(image))
+        # Cached: a new cutoff on the same image skips this FFT.
+        spectrum = centered_spectrum(img2d)
 
         # Build a mask with the same height and width as the image.
-        h, w = image.shape
+        h, w = img2d.shape
         mask = self.build_mask(h, w)
 
         # Keep or reduce each frequency according to its mask weight.
