@@ -268,6 +268,8 @@ Images inside `core/` are NumPy arrays. Input: `uint8`. Internal math: `float64`
 
 All endpoints are `POST` with JSON bodies, prefixed `/api`. Images travel as data-URL strings (`"data:image/png;base64,..."`).
 
+**Upload once:** `POST /api/images {image}` stores the decoded image in server memory and returns `data.ref` (`"image-id:<id>"`). Any image field of any endpoint accepts that ref instead of a data URL; `decode_image` resolves it, so routes need no changes. An unknown id (e.g. after a server restart) returns `410`. The frontend does this automatically in `api/client.js` (`postJSON`), including re-upload and retry on `410`, so pages still just pass data URLs.
+
 **Unified response envelope:**
 ```json
 {

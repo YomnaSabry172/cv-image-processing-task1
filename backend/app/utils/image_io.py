@@ -7,15 +7,70 @@ BGR↔RGB conversion happens ONLY here.
 from __future__ import annotations
 
 import base64
+import hashlib
 import re
+import threading
+from collections import OrderedDict
 
 import cv2
 import numpy as np
 
 MAX_SIDE = 1024  # longest side after downscale
 
+# Upload-once store: the browser uploads an image one time (POST /api/images),
+# gets back an id, and then sends "image-id:<id>" instead of the whole picture.
+# It lives in memory, so a server restart empties it (routes answer 410 and the
+# frontend uploads again). 32 entries × ≤3 MB (1024×1024 RGB) ≈ 100 MB at most.
+IMAGE_REF_PREFIX = "image-id:"
+_STORE_SIZE = 32
+_store: OrderedDict[str, np.ndarray] = OrderedDict()
+_store_lock = threading.Lock()  # FastAPI runs requests in parallel threads
 
-def decode_image(data_url: str) -> np.ndarray:
+
+class UnknownImageError(LookupError):
+    """An image id that the server does not have (never stored, evicted, or server restarted)."""
+
+
+def store_image(data_url: str) -> str:
+    """Decode a data URL once, keep the array in memory, and return its id.
+
+    The id is a hash of the data URL, so uploading the same picture twice gives
+    the same id and stores it only once.
+    """
+    image_id = hashlib.sha256(data_url.encode()).hexdigest()[:32]
+    with _store_lock:
+        if image_id in _store:
+            _store.move_to_end(image_id)
+            return image_id
+    img = _decode_data_url(data_url)
+    img.flags.writeable = False  # shared between requests, so nobody may change it in place
+    with _store_lock:
+        _store[image_id] = img
+        _store.move_to_end(image_id)
+        while len(_store) > _STORE_SIZE:
+            _store.popitem(last=False)  # forget the least recently used image
+    return image_id
+
+
+def decode_image(image: str) -> np.ndarray:
+    """Turn a request's image field into a uint8 array (RGB or gray).
+
+    Accepts either a data URL or "image-id:<id>" from store_image().
+    Raises ValueError for bad image data and UnknownImageError for an unknown id.
+    """
+    if image.startswith(IMAGE_REF_PREFIX):
+        image_id = image[len(IMAGE_REF_PREFIX):]
+        with _store_lock:
+            img = _store.get(image_id)
+            if img is not None:
+                _store.move_to_end(image_id)
+        if img is None:
+            raise UnknownImageError(f"Image {image_id!r} is not on the server; upload it again.")
+        return img.copy()  # writable copy, so a route can never damage the stored image
+    return _decode_data_url(image)
+
+
+def _decode_data_url(data_url: str) -> np.ndarray:
     """Convert a base64 data-URL to a uint8 NumPy array (RGB or gray).
 
     Steps:

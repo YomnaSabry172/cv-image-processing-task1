@@ -5,6 +5,7 @@ Registers every feature router under the /api prefix.
 from fastapi import APIRouter
 
 from app.api.health import router as health_router
+from app.api.images import router as images_router
 from app.api.grayscale import router as grayscale_router
 from app.api.noise import router as noise_router
 from app.api.filters import router as filters_router
@@ -18,6 +19,7 @@ from app.api.normalize import router as normalize_router
 router = APIRouter()
 
 router.include_router(health_router)
+router.include_router(images_router)
 router.include_router(grayscale_router)
 router.include_router(filters_router)
 router.include_router(noise_router)

@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api import router as api_router
+from app.utils.image_io import UnknownImageError
 
 app = FastAPI(
     title="CV Task 1 — Image Processing",
@@ -26,6 +27,12 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix="/api")
+
+
+@app.exception_handler(UnknownImageError)
+async def unknown_image_handler(request: Request, exc: UnknownImageError):
+    """Any route got an image id the server no longer has. 410 tells the frontend to upload again."""
+    return JSONResponse(status_code=410, content={"detail": str(exc)})
 
 
 @app.exception_handler(NotImplementedError)

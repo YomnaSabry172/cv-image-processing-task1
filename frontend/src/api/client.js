@@ -37,14 +37,54 @@ async function request(path, options = {}) {
   return res.json()
 }
 
-/** POST a JSON body to /api{path}. Pass an AbortSignal to cancel stale requests. */
-export function postJSON(path, body, signal) {
+function post(path, body, signal) {
   return request(path, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
     signal,
   })
+}
+
+// Upload-once: each picture goes to the backend a single time (POST /api/images).
+// After that, requests carry a short "image-id:..." reference instead of the full data URL.
+const MAX_REMEMBERED = 50
+const imageRefs = new Map() // data URL → Promise of its "image-id:..." reference
+
+function imageRef(dataUrl) {
+  if (!imageRefs.has(dataUrl)) {
+    // No abort signal: several pages may wait on this same upload.
+    const pending = post('/images', { image: dataUrl }).then((res) => res.data.ref)
+    pending.catch(() => imageRefs.delete(dataUrl)) // failed upload → try again next time
+    imageRefs.set(dataUrl, pending)
+    if (imageRefs.size > MAX_REMEMBERED) imageRefs.delete(imageRefs.keys().next().value)
+  }
+  return imageRefs.get(dataUrl)
+}
+
+/** Swap every top-level data-URL field (image, image_a, image_b…) for its uploaded reference. */
+async function withImageRefs(body) {
+  const entries = await Promise.all(
+    Object.entries(body).map(async ([key, value]) =>
+      typeof value === 'string' && value.startsWith('data:image/') ? [key, await imageRef(value)] : [key, value],
+    ),
+  )
+  return Object.fromEntries(entries)
+}
+
+/**
+ * POST a JSON body to /api{path}. Pass an AbortSignal to cancel stale requests.
+ * Images in the body are uploaded once and then sent as references. If the backend
+ * restarted and forgot them (410), they are uploaded again and the request is retried once.
+ */
+export async function postJSON(path, body, signal) {
+  try {
+    return await post(path, await withImageRefs(body), signal)
+  } catch (err) {
+    if (err.status !== 410) throw err
+    imageRefs.clear()
+    return post(path, await withImageRefs(body), signal)
+  }
 }
 
 /** GET /api{path}. */
