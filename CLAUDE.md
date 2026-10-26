@@ -31,14 +31,14 @@ A written report (observations on methods & parameter variations, plus UI featur
 
 ## 2. Team & ownership
 
-Replace the names below with real names.
+Roles map to people as follows (the letters B, C, D still appear in file headers and report names).
 
 | Role | Owner | Owns |
 |------|-------|------|
-| Lead | `LEAD_NAME` | Repo, UI shell, design system, shared components, backend setup, utils, all placeholders, feature 7 (grayscale) as the reference example, final integration |
-| B | `MEMBER_B` | `core/convolution.py`, `core/kernels.py`, `core/compare.py`, features 1 (noise) and 2 (filters) |
-| C | `MEMBER_C` | Features 3 (edges), 9 (frequency filters), 10 (hybrid) |
-| D | `MEMBER_D` | Features 4 & 8 (histograms/CDF), 5 (equalization), 6 (normalization) |
+| Lead | Yomna Sabry | Repo, UI shell, design system, shared components, backend setup, utils, all placeholders, feature 7 (grayscale) as the reference example, final integration |
+| B | Ziad Osama | `core/convolution.py`, `core/kernels.py`, `core/compare.py`, features 1 (noise) and 2 (filters) |
+| C | Hana Gamal Ouda | Features 3 (edges), 9 (frequency filters), 10 (hybrid) |
+| D | Alaa Essam | Features 4 & 8 (histograms/CDF), 5 (equalization), 6 (normalization) |
 
 **Dependency:** C's edge detection needs B's convolution. B delivers `correlate2d_manual` first. Until then, C calls the built-in path.
 
