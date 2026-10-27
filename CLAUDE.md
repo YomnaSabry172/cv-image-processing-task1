@@ -1,9 +1,7 @@
-# CLAUDE.md — CV Task 1: Image Processing Web App
+# HELP.md — CV Task 1: Image Processing Web App
 
-> This file is read by Claude Code at the start of every session.
+> This file is read at the start of every session.
 > It is the single source of truth for structure, rules, contracts and ownership.
-> **Deadline: 12 October.** Prefer simple, working, clean code over clever code.
-
 ---
 
 ## 1. Project overview
