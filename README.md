@@ -73,18 +73,18 @@ Each person owns their code end to end (see the `# Owner:` header at the top of 
 
 ## ✨ Features
 
-| # | Feature | Method | From scratch? | Owner |
-|:-:|---|---|:-:|---|
-| 1 | [Noise](#1-noise) | Uniform, Gaussian, salt & pepper | Salt & pepper ✅ · uniform/Gaussian use NumPy random | Ziad |
-| 2 | [Low-pass filters](#2-low-pass-filters) | Average, Gaussian, median · manual **and** SciPy twin | ✅ | Ziad |
-| 3 | [Edge detection](#3-edge-detection) | Sobel, Prewitt, Roberts, Canny | ✅ (Canny uses `cv2.Canny`) | Hana |
-| 4 | [Histogram & PDF](#4--8-histograms-pdf-and-cdf) | Per-channel counts and probabilities | ✅ | Alaa |
-| 5 | [Equalization](#5-histogram-equalization) | CDF lookup table | ✅ | Alaa |
-| 6 | [Normalization](#6-min-max-normalization) | Min-max stretch to 0–255 | ✅ | Alaa |
-| 7 | [Grayscale](#7-grayscale-conversion) | `0.299 R + 0.587 G + 0.114 B` | ✅ | Yomna |
-| 8 | [R, G, B histograms + CDF](#4--8-histograms-pdf-and-cdf) | Reuses feature 4 | ✅ | Alaa |
-| 9 | [Frequency filters](#9-frequency-domain-filters) | Ideal, Gaussian, Butterworth · low/high-pass | Masks ✅ · FFT via `np.fft` | Hana |
-| 10 | [Hybrid images](#10-hybrid-images) | Low-pass A + high-pass B, reuses feature 9 | ✅ | Hana |
+| # | Feature | Method | From scratch? |
+|:-:|---|---|:-:
+| 1 | [Noise](#1-noise) | Uniform, Gaussian, salt & pepper | Salt & pepper ✅ · uniform/Gaussian use NumPy random |
+| 2 | [Low-pass filters](#2-low-pass-filters) | Average, Gaussian, median · manual **and** SciPy twin | ✅ |
+| 3 | [Edge detection](#3-edge-detection) | Sobel, Prewitt, Roberts, Canny | ✅ (Canny uses `cv2.Canny`) |
+| 4 | [Histogram & PDF](#4--8-histograms-pdf-and-cdf) | Per-channel counts and probabilities | ✅ |
+| 5 | [Equalization](#5-histogram-equalization) | CDF lookup table | ✅ |
+| 6 | [Normalization](#6-min-max-normalization) | Min-max stretch to 0–255 | ✅ |
+| 7 | [Grayscale](#7-grayscale-conversion) | `0.299 R + 0.587 G + 0.114 B` | ✅ |
+| 8 | [R, G, B histograms + CDF](#4--8-histograms-pdf-and-cdf) | Reuses feature 4 | ✅ |
+| 9 | [Frequency filters](#9-frequency-domain-filters) | Ideal, Gaussian, Butterworth · low/high-pass | Masks ✅ · FFT via `np.fft` |
+| 10 | [Hybrid images](#10-hybrid-images) | Low-pass A + high-pass B, reuses feature 9 | ✅ |
 
 **UI highlights**
 
